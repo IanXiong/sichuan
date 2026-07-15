@@ -118,38 +118,14 @@
     /* one-page entry card: stack image above text */
     .bezel-core .grid.md\:grid-cols-2 { grid-template-columns: 1fr; }
 
-    /* gate card fits small phones */
-    .gate-card { padding: 1.75rem 1.5rem; }
-
     /* meta strip: remove left borders on single column */
     .md\:border-l { border-left: none; padding-left: 0; }
   }
 
-  /* password gate */
-  #gate { position: fixed; inset: 0; z-index: 100; background: #0E1A1F; display: flex; align-items: center; justify-content: center; padding: 1.5rem; transition: opacity 0.6s var(--ease), visibility 0.6s var(--ease); }
-  #gate.unlocked { opacity: 0; visibility: hidden; pointer-events: none; }
-  .gate-card { background: rgba(247,250,251,0.06); border: 1px solid rgba(156,196,214,0.18); border-radius: 1.75rem; padding: 2.5rem; width: 100%; max-width: 380px; text-align: center; backdrop-filter: blur(12px); }
-  .gate-input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(156,196,214,0.25); border-radius: 0.75rem; padding: 0.85rem 1rem; color: #E8F0F2; font-size: 0.95rem; text-align: center; letter-spacing: 0.15em; transition: border-color 0.4s var(--ease); }
-  .gate-input:focus { outline: none; border-color: #5B8FA8; }
-  .gate-input::placeholder { color: rgba(156,196,214,0.4); letter-spacing: normal; }
-  .gate-shake { animation: shake 0.4s var(--ease); }
-  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
 </style>
 </head>
 
 <body class="font-body text-cream">
-
-<!-- ============ PASSWORD GATE (privacy) ============ -->
-<div id="gate">
-  <div class="gate-card">
-    <div class="font-display font-700 text-frost text-sm tracking-[0.25em] mb-3">SICHUAN · 2026</div>
-    <h2 class="font-display font-800 text-cream text-2xl mb-2">川西 · 九日</h2>
-    <p class="text-frost/60 text-xs mb-6 leading-relaxed">私人行程 · 请输入访问口令</p>
-    <input id="gate-input" class="gate-input" type="password" placeholder="口令" autocomplete="off" />
-    <button id="gate-btn" class="btn-magnetic w-full mt-3 bg-ice text-cream rounded-full py-3 text-sm font-600 transition-colors duration-500 hover:bg-frost">进入</button>
-    <p id="gate-err" class="text-red-300/70 text-xs mt-3 h-4"></p>
-  </div>
-</div>
 
 <main class="overflow-x-hidden w-full max-w-full">
 
@@ -785,35 +761,6 @@
     scrollTrigger: { trigger: '#accordion', start: 'top 80%' }
   });
 
-  /* ============ PASSWORD GATE ============ */
-  // Change this to your own passphrase. Front-end only — slows casual visitors,
-  // not a strong secret. For real privacy, restrict WHO you share the URL with.
-  const PASSPHRASE = 'chuanxi2026';
-  const gate = document.getElementById('gate');
-  const gateInput = document.getElementById('gate-input');
-  const gateBtn = document.getElementById('gate-btn');
-  const gateErr = document.getElementById('gate-err');
-
-  function tryUnlock() {
-    const card = gate.querySelector('.gate-card');
-    if (gateInput.value.trim() === PASSPHRASE) {
-      gate.classList.add('unlocked');
-      sessionStorage.setItem('sx_ok', '1');
-      // refresh ScrollTrigger after layout shift
-      setTimeout(() => ScrollTrigger.refresh(), 700);
-    } else {
-      card.classList.add('gate-shake');
-      gateErr.textContent = '口令不正确，请重试';
-      setTimeout(() => card.classList.remove('gate-shake'), 400);
-    }
-  }
-  // unlock instantly if already authenticated this session
-  if (sessionStorage.getItem('sx_ok') === '1') {
-    gate.classList.add('unlocked');
-  }
-  gateBtn.addEventListener('click', tryUnlock);
-  gateInput.addEventListener('keydown', e => { if (e.key === 'Enter') tryUnlock(); });
-  setTimeout(() => gateInput.focus(), 400);
 </script>
 
 </body>
