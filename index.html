@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>川西 · 九日 — 亲子自驾</title>
+<meta name="description" content="2026.7.18-26 · 武汉飞成都 · 川西亲子自驾 · 九日行程可视化" />
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
+<meta name="referrer" content="no-referrer" />
+
+<!-- Premium Fonts: Cabinet Grotesk (display) + Geist (body) + Noto Serif SC (editorial accents) -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800&f[]=satoshi@400,500,700&display=swap" rel="stylesheet" />
+<link href="https://unpkg.com/@fontsource/geist@1.0.0/index.css" rel="stylesheet" />
+
+<!-- Tailwind + GSAP -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          display: ['"Cabinet Grotesk"', '"Noto Serif SC"', 'sans-serif'],
+          serif: ['"Noto Serif SC"', 'serif'],
+          body: ['"Satoshi"', '"Cabinet Grotesk"', 'system-ui', 'sans-serif'],
+        },
+        colors: {
+          cream: '#F2F5F4',
+          paper: '#F7FAFB',
+          espresso: '#0E1A1F',
+          ink: '#16242B',
+          ice: '#5B8FA8',
+          frost: '#9CC4D6',
+          pine: '#3E5C5A',
+          snow: '#E8F0F2',
+        },
+      },
+    },
+  };
+</script>
+
+<style>
+  :root { --ease: cubic-bezier(0.32, 0.72, 0, 1); }
+  html, body { background: #0B151A; }
+  body { font-family: 'Satoshi', 'Cabinet Grotesk', system-ui, sans-serif; color: #E8F0F2; -webkit-font-smoothing: antialiased; }
+
+  /* film grain overlay — fixed, non-repainting */
+  body::before {
+    content: ''; position: fixed; inset: 0; z-index: 60; pointer-events: none; opacity: 0.05;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .font-display { font-family: 'Cabinet Grotesk', 'Noto Serif SC', sans-serif; }
+  .font-serif-sc { font-family: 'Noto Serif SC', serif; }
+
+  /* reveal on scroll */
+  .reveal { opacity: 0; transform: translateY(48px); filter: blur(8px); transition: opacity 1s var(--ease), transform 1s var(--ease), filter 1s var(--ease); }
+  .reveal.in { opacity: 1; transform: translateY(0); filter: blur(0); }
+
+  /* double-bezel card */
+  .bezel { background: rgba(255,255,255,0.04); border: 1px solid rgba(156,196,214,0.14); padding: 0.5rem; border-radius: 1.75rem; box-shadow: 0 8px 40px -16px rgba(0,0,0,0.6); }
+  .bezel-core { background: rgba(20,34,40,0.85); border-radius: calc(1.75rem - 0.5rem); box-shadow: inset 0 1px 1px rgba(156,196,214,0.12); overflow: hidden; height: 100%; }
+
+  /* eyebrow */
+  .eyebrow { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 500; }
+
+  /* image treatment — cool, crisp mountain tones */
+  .scenic { filter: contrast(1.1) saturate(0.85) brightness(0.92) hue-rotate(-6deg); transition: transform 1.2s var(--ease), filter 1.2s var(--ease); }
+  .card-hover:hover .scenic { transform: scale(1.06); filter: contrast(1.15) saturate(1) brightness(1) hue-rotate(-6deg); }
+
+  /* magnetic button */
+  .btn-magnetic { transition: transform 0.5s var(--ease); }
+  .btn-magnetic:active { transform: scale(0.98); }
+  .btn-arrow { transition: transform 0.5s var(--ease); }
+  .btn-magnetic:hover .btn-arrow { transform: translate(2px, -2px) scale(1.08); }
+
+  /* horizontal accordion */
+  .accordion-slice { transition: flex 0.9s var(--ease), filter 0.9s var(--ease); }
+  .accordion-slice:not(.is-open) { filter: grayscale(0.5) brightness(0.5); }
+  .accordion-slice.is-open { filter: none; }
+
+  /* route line draw */
+  .route-path { stroke-dasharray: 2000; stroke-dashoffset: 2000; }
+
+  /* nav glass */
+  .nav-pill { background: rgba(11,21,26,0.65); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(156,196,214,0.14); }
+
+  ::selection { background: #9CC4D6; color: #0B151A; }
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: #0B151A; }
+  ::-webkit-scrollbar-thumb { background: #2A4350; border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: #3E5C5A; }
+
+  /* ============ MOBILE TUNING ============ */
+  @media (max-width: 768px) {
+    /* nav: sit closer to top, smaller, don't crowd hero */
+    .nav-pill { top: 0.625rem; max-width: calc(100vw - 1.5rem); }
+    .nav-pill > a:first-child { padding-left: 0.875rem; padding-right: 0.75rem; font-size: 0.8rem; }
+
+    /* hero breathing room below floating nav */
+    #hero { padding-top: 5rem; }
+
+    /* accordion: vertical stack on phones — reliable tap targets, no hover */
+    #accordion { flex-direction: column; height: auto; min-height: 0; gap: 0.625rem; }
+    .accordion-slice { flex: none !important; height: 88px; min-height: 88px; filter: none !important; }
+    .accordion-slice.is-open { height: auto; min-height: 200px; }
+    .accordion-slice .acc-text { max-height: 0 !important; }
+    .accordion-slice.is-open .acc-text { max-height: 200px !important; }
+
+    /* tighten section horizontal padding on phones */
+    section { padding-left: 1.125rem; padding-right: 1.125rem; }
+
+    /* one-page entry card: stack image above text */
+    .bezel-core .grid.md\:grid-cols-2 { grid-template-columns: 1fr; }
+
+    /* gate card fits small phones */
+    .gate-card { padding: 1.75rem 1.5rem; }
+
+    /* meta strip: remove left borders on single column */
+    .md\:border-l { border-left: none; padding-left: 0; }
+  }
+
+  /* password gate */
+  #gate { position: fixed; inset: 0; z-index: 100; background: #0E1A1F; display: flex; align-items: center; justify-content: center; padding: 1.5rem; transition: opacity 0.6s var(--ease), visibility 0.6s var(--ease); }
+  #gate.unlocked { opacity: 0; visibility: hidden; pointer-events: none; }
+  .gate-card { background: rgba(247,250,251,0.06); border: 1px solid rgba(156,196,214,0.18); border-radius: 1.75rem; padding: 2.5rem; width: 100%; max-width: 380px; text-align: center; backdrop-filter: blur(12px); }
+  .gate-input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(156,196,214,0.25); border-radius: 0.75rem; padding: 0.85rem 1rem; color: #E8F0F2; font-size: 0.95rem; text-align: center; letter-spacing: 0.15em; transition: border-color 0.4s var(--ease); }
+  .gate-input:focus { outline: none; border-color: #5B8FA8; }
+  .gate-input::placeholder { color: rgba(156,196,214,0.4); letter-spacing: normal; }
+  .gate-shake { animation: shake 0.4s var(--ease); }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
+</style>
+</head>
+
+<body class="font-body text-cream">
+
+<!-- ============ PASSWORD GATE (privacy) ============ -->
+<div id="gate">
+  <div class="gate-card">
+    <div class="font-display font-700 text-frost text-sm tracking-[0.25em] mb-3">SICHUAN · 2026</div>
+    <h2 class="font-display font-800 text-cream text-2xl mb-2">川西 · 九日</h2>
+    <p class="text-frost/60 text-xs mb-6 leading-relaxed">私人行程 · 请输入访问口令</p>
+    <input id="gate-input" class="gate-input" type="password" placeholder="口令" autocomplete="off" />
+    <button id="gate-btn" class="btn-magnetic w-full mt-3 bg-ice text-cream rounded-full py-3 text-sm font-600 transition-colors duration-500 hover:bg-frost">进入</button>
+    <p id="gate-err" class="text-red-300/70 text-xs mt-3 h-4"></p>
+  </div>
+</div>
+
+<main class="overflow-x-hidden w-full max-w-full">
+
+  <!-- ============ NAV ============ -->
+  <nav class="fixed top-5 left-1/2 -translate-x-1/2 z-50 nav-pill rounded-full px-2 py-2 flex items-center gap-1 shadow-[0_8px_40px_-12px_rgba(14,26,31,0.25)]">
+    <a href="#hero" class="px-4 py-2 rounded-full font-display font-700 text-sm tracking-tight text-cream">川西·九日</a>
+    <div class="hidden md:flex items-center gap-1">
+      <a href="#route" class="px-3 py-2 rounded-full text-xs text-cream/85 hover:bg-cream/10 transition-colors duration-500">路线</a>
+      <a href="#days" class="px-3 py-2 rounded-full text-xs text-cream/85 hover:bg-cream/10 transition-colors duration-500">日历</a>
+      <a href="#highlights" class="px-3 py-2 rounded-full text-xs text-cream/85 hover:bg-cream/10 transition-colors duration-500">高光</a>
+      <a href="#budget" class="px-3 py-2 rounded-full text-xs text-cream/85 hover:bg-cream/10 transition-colors duration-500">预算</a>
+    </div>
+    <a href="#days" class="ml-1 btn-magnetic group flex items-center gap-2 bg-espresso text-cream rounded-full pl-4 pr-1.5 py-1.5 text-xs font-500">
+      查看行程
+      <span class="btn-arrow w-7 h-7 rounded-full bg-cream/15 flex items-center justify-center">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </span>
+    </a>
+  </nav>
+
+  <!-- ============ HERO (Cinematic Center) ============ -->
+  <section id="hero" class="relative min-h-[100dvh] flex flex-col items-center justify-center px-6 overflow-hidden">
+    <!-- background image with radial wash -->
+    <div class="absolute inset-0 -z-10">
+      <img src="https://images.unsplash.com/photo-1486870591958-9b9d0d1dda99?auto=format&fit=crop&w=1920&q=80" alt="" class="w-full h-full object-cover scenic" style="filter: contrast(1.15) saturate(0.7) brightness(0.5) hue-rotate(-8deg);" />
+      <div class="absolute inset-0" style="background: radial-gradient(ellipse at center, rgba(14,26,31,0.15) 0%, rgba(14,26,31,0.6) 55%, rgba(14,26,31,0.9) 100%);"></div>
+    </div>
+
+    <div class="text-center max-w-5xl">
+      <div class="reveal eyebrow text-frost/70 mb-8">2026 · 七月十八日 — 二十六日 · 九日</div>
+      <h1 class="reveal font-display font-800 text-cream leading-[0.98] tracking-tight" style="font-size: clamp(2.75rem, 7vw, 6.5rem);">
+        川西 · 九日
+        <span class="block font-serif-sc font-500 italic text-frost mt-2" style="font-size: clamp(1.1rem, 2.2vw, 1.9rem); letter-spacing: 0.04em;">从四姑娘山，到格聂之眼</span>
+      </h1>
+      <p class="reveal max-w-xl mx-auto mt-10 text-cream/90 text-sm md:text-base leading-relaxed font-body">
+        江城西望，落锦官而驭长车。九日穿行阿坝与甘孜，雪峰、藏寨、海子与草海依次铺展。不赶路，不逞强。
+      </p>
+      <div class="reveal flex flex-wrap items-center justify-center gap-3 mt-12">
+        <a href="#days" class="btn-magnetic group flex items-center gap-2 bg-cream text-espresso rounded-full pl-6 pr-2 py-2.5 text-sm font-600">
+          开启九日
+          <span class="btn-arrow w-8 h-8 rounded-full bg-espresso/10 flex items-center justify-center">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg>
+          </span>
+        </a>
+        <a href="#route" class="text-cream/80 text-sm font-500 px-5 py-3 rounded-full border border-cream/25 hover:bg-cream/10 transition-colors duration-500">查看路线</a>
+      </div>
+    </div>
+
+    <!-- scroll hint -->
+    <div class="absolute bottom-10 left-1/2 -translate-x-1/2 text-cream/40 text-[10px] tracking-[0.3em] uppercase flex flex-col items-center gap-3">
+      <span>向下</span>
+      <span class="w-px h-10 bg-cream/30 animate-pulse"></span>
+    </div>
+  </section>
+
+  <!-- ============ TRIP META STRIP ============ -->
+  <section class="py-16 md:py-24 px-6">
+    <div class="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-4">
+      <div class="reveal text-center md:text-left md:border-l md:border-cream/10 md:pl-6">
+        <div class="eyebrow text-ice mb-2">行程</div>
+        <div class="font-display font-700 text-3xl text-cream">9 日</div>
+        <div class="text-xs text-cream/50 mt-1">7.18 — 7.26</div>
+      </div>
+      <div class="reveal text-center md:text-left md:border-l md:border-cream/10 md:pl-6">
+        <div class="eyebrow text-ice mb-2">自驾</div>
+        <div class="font-display font-700 text-3xl text-cream">1,408<span class="text-base text-cream/40">km</span></div>
+        <div class="text-xs text-cream/50 mt-1">九段累计</div>
+      </div>
+      <div class="reveal text-center md:text-left md:border-l md:border-cream/10 md:pl-6">
+        <div class="eyebrow text-ice mb-2">同行</div>
+        <div class="font-display font-700 text-3xl text-cream">2+1</div>
+        <div class="text-xs text-cream/50 mt-1">成人 + 八岁女孩</div>
+      </div>
+      <div class="reveal text-center md:text-left md:border-l md:border-cream/10 md:pl-6">
+        <div class="eyebrow text-ice mb-2">预算</div>
+        <div class="font-display font-700 text-3xl text-cream">10,099</div>
+        <div class="text-xs text-cream/50 mt-1">交通 + 住宿</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ONEPAGE ENTRY CARD ============ -->
+  <section class="px-6 pb-8 md:pb-16">
+    <div class="max-w-7xl mx-auto">
+      <a href="#days" class="reveal block group">
+        <div class="bezel card-hover transition-transform duration-700 group-hover:-translate-y-1">
+          <div class="bezel-core relative overflow-hidden">
+            <div class="grid md:grid-cols-2">
+              <!-- left: image -->
+              <div class="relative h-64 md:h-auto min-h-[280px] overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80" alt="" class="w-full h-full object-cover scenic" />
+                <div class="absolute inset-0" style="background: linear-gradient(to right, transparent 50%, rgba(20,34,40,0.92) 100%);"></div>
+                <div class="absolute top-5 left-5 eyebrow text-cream/80 bg-espresso/40 backdrop-blur rounded-full px-3 py-1">完整行程</div>
+              </div>
+              <!-- right: content -->
+              <div class="p-8 md:p-12 flex flex-col justify-center">
+                <div class="eyebrow text-ice mb-4">OnePage · 一页全览</div>
+                <h2 class="font-display font-800 text-cream leading-[1.05] tracking-tight" style="font-size: clamp(1.75rem, 3.5vw, 2.75rem);">
+                  九日山河，<br/>尽在一页
+                </h2>
+                <p class="text-cream/80 mt-4 text-sm leading-relaxed max-w-md">
+                  路线总览、逐日行程、四处高光、预算明细——向下滚动，一次性看完整个旅程的脉络。
+                </p>
+                <div class="btn-magnetic inline-flex items-center gap-2 mt-7 self-start bg-espresso text-cream rounded-full pl-5 pr-2 py-2 text-sm font-600">
+                  查看完整行程
+                  <span class="btn-arrow w-7 h-7 rounded-full bg-cream/15 flex items-center justify-center">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <!-- ============ TRIP CORE (出行核心) ============ -->
+  <section class="px-6 py-16 md:py-24">
+    <div class="max-w-5xl mx-auto">
+      <div class="reveal bezel">
+        <div class="bezel-core p-8 md:p-12">
+          <div class="eyebrow text-ice mb-5">出行核心</div>
+          <div class="grid md:grid-cols-3 gap-6 md:gap-10">
+            <div>
+              <div class="text-[10px] text-cream/40 uppercase tracking-widest mb-1.5">时间</div>
+              <div class="font-display font-600 text-cream">2026.7.18 — 26</div>
+            </div>
+            <div>
+              <div class="text-[10px] text-cream/40 uppercase tracking-widest mb-1.5">交通</div>
+              <div class="font-display font-600 text-cream">武汉 ✈️ 成都 · 落地租车</div>
+            </div>
+            <div>
+              <div class="text-[10px] text-cream/40 uppercase tracking-widest mb-1.5">同行</div>
+              <div class="font-display font-600 text-cream">2成人 + 8岁女孩</div>
+            </div>
+          </div>
+          <p class="mt-6 pt-6 border-t border-cream/10 text-sm text-cream/85 leading-relaxed">
+            川西亲子自驾，兼顾川西景点与自驾节奏，不特种兵赶路。
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ GEOGRAPHY TABLE (地理位置科普) ============ -->
+  <section class="px-6 pb-8 md:pb-16">
+    <div class="max-w-7xl mx-auto">
+      <div class="reveal mb-8">
+        <div class="eyebrow text-ice mb-4">地理位置科普</div>
+        <h2 class="font-display font-800 text-cream leading-[1.02] tracking-tight" style="font-size: clamp(1.75rem, 3.5vw, 2.75rem);">自治州 · 市县 · 乡镇</h2>
+      </div>
+      <div class="reveal bezel">
+        <div class="bezel-core overflow-x-auto">
+          <table class="w-full text-sm min-w-[560px]">
+            <thead>
+              <tr class="border-b border-cream/10 text-left">
+                <th class="px-5 py-4 eyebrow text-cream/50 font-500">自治州</th>
+                <th class="px-5 py-4 eyebrow text-cream/50 font-500">市县</th>
+                <th class="px-5 py-4 eyebrow text-cream/50 font-500">乡镇</th>
+                <th class="px-5 py-4 eyebrow text-cream/50 font-500">停留日期</th>
+                <th class="px-5 py-4 eyebrow text-cream/50 font-500">住宿日期</th>
+              </tr>
+            </thead>
+            <tbody id="geo-body" class="divide-y divide-cream/6"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="reveal mt-6 bezel" style="background: rgba(91,143,168,0.08); border-color: rgba(91,143,168,0.18);">
+        <div class="bezel-core p-6 md:p-7" style="background: rgba(91,143,168,0.06);">
+          <div class="eyebrow text-ice mb-2">雪山观景台</div>
+          <p class="text-sm text-cream/75 leading-relaxed"><b class="text-cream">子梅垭口</b>：贡嘎主峰最近观景平台，海拔4500米，位于康定。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ROUTE OVERVIEW (Editorial Split + SVG map) ============ -->
+  <section id="route" class="py-24 md:py-40 px-6">
+    <div class="max-w-7xl mx-auto">
+      <div class="grid md:grid-cols-2 gap-12 md:gap-20 items-center">
+        <!-- left: title pinned feel -->
+        <div class="md:sticky md:top-32 self-start">
+          <div class="reveal eyebrow text-ice mb-5">路线总览</div>
+          <h2 class="reveal font-display font-800 text-cream leading-[1.02] tracking-tight" style="font-size: clamp(2.25rem, 4.5vw, 4rem);">
+            一条线，<br/>串起九日山河
+          </h2>
+          <p class="reveal text-cream/80 mt-6 max-w-md leading-relaxed text-sm md:text-base">
+            成都向西，经映秀入四姑娘山，沿小金至丹巴藏寨，翻越折多山抵理塘，深入格聂腹地，再沿318东返。起伏之间，海拔从五百米攀至四千七百米。
+          </p>
+          <div class="reveal flex items-center gap-6 mt-8 text-xs text-cream/50">
+            <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-pine"></span>阿坝</div>
+            <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-ice"></span>甘孜</div>
+            <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-espresso"></span>起点/终点</div>
+          </div>
+        </div>
+
+        <!-- right: route timeline cards -->
+        <div class="space-y-3">
+          <!-- generated below by JS, but we render static for reliability -->
+          <div id="route-list"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ DAY-BY-DAY BENTO ============ -->
+  <section id="days" class="py-24 md:py-40 px-6">
+    <div class="max-w-7xl mx-auto">
+      <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-16">
+        <div>
+          <div class="reveal eyebrow text-ice mb-5">九日历</div>
+          <h2 class="reveal font-display font-800 text-cream leading-[1.02] tracking-tight" style="font-size: clamp(2.25rem, 4.5vw, 4rem);">
+            逐日行程
+          </h2>
+        </div>
+        <p class="reveal text-cream/80 max-w-sm text-sm leading-relaxed">
+          每日标注自驾时长与疲劳指数。星号越多，当日越需留出休息余量。
+        </p>
+      </div>
+
+      <div id="bento" class="columns-1 md:columns-2 gap-4"></div>
+    </div>
+  </section>
+
+  <!-- ============ HIGHLIGHTS (Horizontal Accordion) ============ -->
+  <section id="highlights" class="py-24 md:py-40 px-6">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center mb-16">
+        <div class="reveal eyebrow text-ice mb-5">高光时刻</div>
+        <h2 class="reveal font-display font-800 text-cream leading-[1.02] tracking-tight" style="font-size: clamp(2.25rem, 4.5vw, 4rem);">
+          四处值得停下
+        </h2>
+      </div>
+
+      <div id="accordion" class="flex h-[60vh] min-h-[420px] gap-3 rounded-[2rem] overflow-hidden"></div>
+      <p class="text-center text-xs text-cream/40 mt-5">悬停或点击展开</p>
+    </div>
+  </section>
+
+  <!-- ============ TODO (待办事项) ============ -->
+  <section class="px-6 py-16 md:py-24">
+    <div class="max-w-3xl mx-auto">
+      <div class="reveal mb-8">
+        <div class="eyebrow text-ice mb-4">待办事项</div>
+        <h2 class="font-display font-800 text-cream leading-[1.02] tracking-tight" style="font-size: clamp(1.75rem, 3.5vw, 2.75rem);">出发前的清单</h2>
+      </div>
+      <div id="todo-list" class="space-y-3"></div>
+    </div>
+  </section>
+
+  <!-- ============ BUDGET (Action) ============ -->
+  <section id="budget" class="py-24 md:py-40 px-6 bg-espresso text-cream relative overflow-hidden">
+    <div class="absolute top-0 right-0 w-[500px] h-[500px] rounded-full opacity-20 blur-[120px]" style="background: #5B8FA8;"></div>
+    <div class="max-w-6xl mx-auto relative">
+      <div class="text-center mb-16">
+        <div class="reveal eyebrow text-frost/70 mb-5">预算</div>
+        <h2 class="reveal font-display font-800 leading-[1.02] tracking-tight" style="font-size: clamp(2.25rem, 4.5vw, 4rem);">
+          总计 <span class="text-ice">10,099</span> 元
+        </h2>
+        <p class="reveal text-cream/80 mt-4 text-sm">交通 5,548 · 住宿 4,551</p>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-6">
+        <!-- transport -->
+        <div class="reveal bezel" style="background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1);">
+          <div class="bezel-core p-8" style="background: rgba(14,26,31,0.6); box-shadow: inset 0 1px 1px rgba(255,255,255,0.08);">
+            <div class="eyebrow text-frost/60 mb-6">交通 · 5,548</div>
+            <div class="space-y-5">
+              <div>
+                <div class="flex justify-between items-baseline mb-2"><span class="text-sm">飞机</span><span class="font-display font-700">2,558</span></div>
+                <div class="h-1.5 rounded-full bg-cream/10 overflow-hidden"><div class="h-full bg-ice rounded-full" style="width: 86%"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between items-baseline mb-2"><span class="text-sm">租车 · 哈弗H6</span><span class="font-display font-700">1,729</span></div>
+                <div class="h-1.5 rounded-full bg-cream/10 overflow-hidden"><div class="h-full bg-frost rounded-full" style="width: 58%"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between items-baseline mb-2"><span class="text-sm">火车 · 动卧</span><span class="font-display font-700">1,261</span></div>
+                <div class="h-1.5 rounded-full bg-cream/10 overflow-hidden"><div class="h-full bg-pine rounded-full" style="width: 42%"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- lodging -->
+        <div class="reveal bezel" style="background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1);">
+          <div class="bezel-core p-8" style="background: rgba(14,26,31,0.6); box-shadow: inset 0 1px 1px rgba(255,255,255,0.08);">
+            <div class="eyebrow text-frost/60 mb-6">住宿 · 4,551</div>
+            <div class="space-y-4 text-sm">
+              <div class="flex justify-between items-baseline pb-3 border-b border-cream/10"><span>四姑娘山 · 仰望星空庄园 <span class="text-cream/40 text-xs">2晚</span></span><span class="font-display font-700">1,622</span></div>
+              <div class="flex justify-between items-baseline pb-3 border-b border-cream/10"><span>理塘 · 汉庭318国道 <span class="text-cream/40 text-xs">2晚</span></span><span class="font-display font-700">874</span></div>
+              <div class="flex justify-between items-baseline pb-3 border-b border-cream/10"><span>理塘 · 格聂观山悦岭民宿</span><span class="font-display font-700">555</span></div>
+              <div class="flex justify-between items-baseline pb-3 border-b border-cream/10"><span>康定 · 情歌广场城际酒店</span><span class="font-display font-700">547</span></div>
+              <div class="flex justify-between items-baseline pb-3 border-b border-cream/10"><span>新都桥 · 桔子摄影天堂小镇</span><span class="font-display font-700">515</span></div>
+              <div class="flex justify-between items-baseline"><span>丹巴 · 及所悬崖酒店</span><span class="font-display font-700">438</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="py-20 px-6 bg-espresso text-cream border-t border-cream/10">
+    <div class="max-w-7xl mx-auto">
+      <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-10">
+        <div>
+          <div class="font-display font-800 text-4xl md:text-5xl leading-none">川西·九日</div>
+          <p class="text-cream/40 text-sm mt-4 max-w-xs">愿山风轻些，路远些，孩子笑得多一些。</p>
+        </div>
+        <div class="flex flex-wrap gap-x-10 gap-y-3 text-xs text-cream/80">
+          <div><div class="text-cream/30 mb-1">出发</div>2026.07.18 汉口</div>
+          <div><div class="text-cream/30 mb-1">返程</div>2026.07.26 双流→天河</div>
+          <div><div class="text-cream/30 mb-1">座驾</div>哈弗H6 · 滴滴租车</div>
+        </div>
+      </div>
+      <div class="mt-16 pt-8 border-t border-cream/10 flex justify-between text-[10px] text-cream/30 tracking-[0.2em] uppercase">
+        <span>Family Road Trip</span>
+        <span>Sichuan 2026</span>
+      </div>
+    </div>
+  </footer>
+
+</main>
+
+<script>
+  /* ============ DATA ============ */
+  const routeData = [
+    { day: 'D1', date: '7.18', from: '成都', to: '四姑娘山镇', km: '214km', time: '3h42m', region: 'aba', stop: '映秀·猫鼻梁' },
+    { day: 'D2', date: '7.19', from: '四姑娘山镇', to: '双桥沟', km: '镇内', time: '0h30m', region: 'aba', stop: '漂流·观光车' },
+    { day: 'D3', date: '7.20', from: '四姑娘山镇', to: '丹巴县', km: '130km', time: '2h53m', region: 'ganzi', stop: '长坪沟·甲居藏寨' },
+    { day: 'D4', date: '7.21', from: '丹巴县', to: '康定市', km: '149km', time: '2h49m', region: 'ganzi', stop: '墨石公园·塔公草原' },
+    { day: 'D5', date: '7.22', from: '康定市', to: '理塘县', km: '271km', time: '5h50m', region: 'ganzi', stop: '红海子·折多山' },
+    { day: 'D6', date: '7.23', from: '理塘县', to: '格聂镇', km: '107km', time: '2h30m', region: 'ganzi', stop: '格聂之眼·冷古寺' },
+    { day: 'D7', date: '7.24', from: '格聂镇', to: '理塘县', km: '107km', time: '2h30m', region: 'ganzi', stop: '温泉·毛垭草原' },
+    { day: 'D8', date: '7.25', from: '理塘县', to: '新都桥镇', km: '197km', time: '3h56m', region: 'ganzi', stop: '仓央嘉措·勒通古镇' },
+    { day: 'D9', date: '7.26', from: '新都桥镇', to: '成都', km: '340km', time: '4h41m', region: 'end', stop: '还车·双流✈️武汉' },
+  ];
+
+  const regionColor = { aba: '#3E5C5A', ganzi: '#5B8FA8', end: '#0E1A1F' };
+
+  /* ============ RENDER ROUTE LIST ============ */
+  const routeList = document.getElementById('route-list');
+  routeList.innerHTML = routeData.map(r => `
+    <div class="reveal flex items-center gap-4 group p-4 rounded-2xl hover:bg-cream/[0.06] transition-colors duration-500">
+      <div class="flex flex-col items-center w-12 shrink-0">
+        <span class="font-display font-700 text-cream text-sm">${r.day}</span>
+        <span class="text-[10px] text-cream/40">${r.date}</span>
+      </div>
+      <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background:${regionColor[r.region]}"></span>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2 text-sm font-500">
+          <span class="truncate">${r.from}</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-cream/30 shrink-0"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          <span class="truncate">${r.to}</span>
+        </div>
+        <div class="text-xs text-cream/60 mt-0.5 truncate">${r.stop}</div>
+      </div>
+      <div class="text-right shrink-0">
+        <div class="font-display font-600 text-sm text-cream">${r.km}</div>
+        <div class="text-[10px] text-cream/40">${r.time}</div>
+      </div>
+    </div>
+  `).join('');
+
+  /* ============ BENTO DAY CARDS (full source content, no omissions) ============ */
+  const days = [
+    { id:'D1', date:'7.18', title:'初抵川西 · 平缓适应', img:'1469474968028-56623f02e42e', drive:'约3.5h', km:'成都→映秀→四姑娘山', fatigue:2, span:'md:col-span-6', tag:'阿坝',
+      train:[
+        'D49 | 22:01-07:55 | 汉口-成都东（动卧）',
+        'D982 | 23:54-08:16 | 武昌-成都东（动卧）',
+      ],
+      rental:'滴滴租车 | 7-18 8:15 ~ 7-26 17:15 | 哈弗H6 | 成都凯德广场店（成都东站附近）→ 成都双流机场店（联系门店看是否可送车到成都东站）',
+      items:[
+        '漩口中学地震遗址、映秀震中纪念馆（尊重历史，轻徒步）',
+        '猫鼻梁观景台打卡雪山（拍照不耗时）',
+      ],
+      note:'疲劳指数 ⭐⭐（轻微轻松，略耗精力）',
+      hotel:'四姑娘山仰望星空·Vacilando度假庄园（长坪沟斯古拉神山店）', platform:'trip.com', policy:'T-1日20:00前可取消',
+      body:'动卧夜抵成都东，租车经映秀震中纪念馆、漩口中学遗址，于猫鼻梁观景台初见四姑娘山。轻徒步，尊重历史，缓缓上高原。' },
+    { id:'D2', date:'7.19', title:'轻松遛娃 · 双桥沟全天', img:'1506905925346-21bda4d32df4', drive:'约0.5h', km:'镇内往返双桥沟景区', fatigue:1, span:'md:col-span-6', tag:'阿坝',
+      items:[
+        '双桥沟全天游玩，全程乘坐景区观光车，随停随看，浅逛各观景台，不赶路、不徒步',
+        '漂流',
+      ],
+      note:'疲劳指数 ⭐（超轻松，全程无压力）',
+      hotel:'四姑娘山仰望星空·Vacilando度假庄园（长坪沟斯古拉神山店）', platform:'trip.com', policy:'',
+      body:'全程观光车随停随看，浅逛各观景台，午后漂流。不赶路、不徒步，超轻松。' },
+    { id:'D3', date:'7.20', title:'藏寨慢游 · 低海拔休整', img:'1605649487212-47bdab064df7', drive:'约3~3.5h', km:'四姑娘山镇→丹巴县城 约150-180km（经小金山路弯多）', fatigue:2, span:'md:col-span-6', tag:'甘孜',
+      items:[
+        '长坪沟徒步游玩约2-3小时',
+        '自驾前往丹巴县城',
+        '丹巴县城：甲居藏寨漫步（穿梭藏式民居，欣赏田园风光）',
+        '碉楼观景台打卡（远观碉楼群，不攀爬）',
+      ],
+      note:'疲劳指数 ⭐⭐（轻微轻松，山路弯道略耗精力，7月注意降雨路况）',
+      hotel:'及所悬崖酒店（丹巴甲居藏寨店）', platform:'美团', policy:'不可取消',
+      body:'长坪沟徒步两三小时，自驾至丹巴，甲居藏寨漫步，碉楼远观。' },
+    { id:'D4', date:'7.21', title:'一路风光 · 轻徒步打卡', img:'1470770841072-f978cf4d019e', drive:'约3.5h', km:'丹巴→墨石公园→塔公草原→康定 约180km', fatigue:3, span:'md:col-span-6', tag:'甘孜',
+      items:[
+        '墨石公园轻徒步（197km走平缓步道，打卡异域风地貌）',
+        '塔公草原花海游玩（拍照、轻度活动）',
+        '以下二选一：',
+        '— 天气晴朗可绕行鱼子西（额外约1.5小时），观赏日落雪山',
+        '— 格底拉姆·天空之城（替代鱼子西，平缓无颠簸，无需绕行1.5h，傍晚观赏日落雪山，2h内结束）',
+        '康定溜溜城',
+      ],
+      note:'疲劳指数 ⭐⭐⭐（3.5h自驾+轻徒步，疲惫感比前3天明显）',
+      hotel:'康定情歌广场城际酒店', platform:'华住会小程序', policy:'T-1日23:00前可取消',
+      body:'墨石公园走平缓步道，打卡异域风地貌。塔公草原花海。二选一：晴朗绕行鱼子西看日落雪山，或格底拉姆天空之城。' },
+    { id:'D5', date:'7.22', title:'木格措+折多山 · 翻越川藏第一关', img:'1467003909585-2f8a72700288', drive:'约6h', km:'康定→红海子/木格措→折多山→新都桥→雅江→理塘 约271km', fatigue:5, span:'md:col-span-12', tag:'最长一天', featured:true,
+      items:[
+        '以下二选一（木格措耗时较长，当天自驾时间已经长、为避免夜路危险，可能调整为红海子）：',
+        '— 红海子游玩（平缓高山海子，零徒步，1h内结束，海拔3200m，适配孩子，不拖沓）',
+        '— 木格措逛高山海子+体验药池沸泉（海拔3780米，川西最大高原湖泊群、大型景区）',
+        '天气好则半小时绕行折多山垭口（川藏第一关）',
+      ],
+      note:'疲劳指数 ⭐⭐⭐⭐⭐（最长一天，木格措+折多山两大景点拆分体感）',
+      hotel:'汉庭甘孜理塘318国道酒店', platform:'华住会小程序', policy:'T-1日23:00前可取消',
+      body:'最长一日。红海子平缓海子零徒步，或木格措药池沸泉。天气好则半小时绕行折多山垭口——川藏第一关。经新都桥、雅江，夜抵理塘。' },
+    { id:'D6', date:'7.23', title:'格聂核心 · 深度探索', img:'1501785888041-af3ef285b470', drive:'约5.25h', km:'理塘→格聂镇→则巴村 约107km（含景点停靠）', fatigue:4, span:'md:col-span-6', tag:'甘孜',
+      items:[
+        '理塘→格聂镇（78km，1h46m）',
+        '铁匠山垭口（海拔4700m，可远眺格聂主峰，量力而行）',
+        '格聂镇→则巴村（31km，50m）',
+        '格聂之眼（乃干纳托）（30km，1h），观赏大地瞳孔倒影雪山',
+        '乃干多村→孤独一棵树（轻徒步1km，平缓路，适合8岁孩子）',
+        '下则通村→冷古寺（康区最古老白教寺庙，轻徒步平缓路）',
+        '则巴村花海草原漫步',
+        '夯达营地→格聂神山观景栈道（拍照打卡，不登顶）',
+        '格聂之眼（乃干纳托），观赏大地瞳孔倒影雪山',
+        '然日卡温泉（20分钟，低海拔放松）',
+      ],
+      note:'疲劳指数 ⭐⭐⭐⭐（自驾+格聂探索，充实但不赶）',
+      hotel:'理塘格聂观山悦岭·野奢民宿', platform:'携程', policy:'不可取消',
+      body:'铁匠山垭口远眺格聂主峰，格聂之眼观大地瞳孔倒映雪山，孤独一棵树轻徒步，冷古寺白教古刹。' },
+    { id:'D7', date:'7.24', title:'格聂之眼 · 温泉放松 · 返程', img:'1473773508845-188df298d2d1', drive:'约2.5h', km:'则巴村→格聂之眼→温泉→理塘 约119km', fatigue:3, span:'md:col-span-6', tag:'甘孜',
+      items:[
+        '格聂行程同前一天下午',
+        '格聂镇→理塘（119km，2.5h），沿途毛垭大草原停留漫步',
+      ],
+      note:'疲劳指数 ⭐⭐⭐（格聂之眼+温泉+返程，节奏适中）',
+      hotel:'汉庭甘孜理塘318国道酒店', platform:'华住会小程序', policy:'T-1日23:00前可取消',
+      body:'格聂之眼复访，然日卡温泉二十分钟低海拔放松。沿毛垭大草原漫步，返理塘。' },
+    { id:'D8', date:'7.25', title:'理塘半日 · 返程新都桥', img:'1547036967-23d11aacaee0', drive:'约4h15m', km:'理塘→雅江→新都桥 约199km', fatigue:3, span:'md:col-span-6', tag:'甘孜',
+      items:[
+        '上午逛理塘：参观仓央嘉措纪念馆、理塘朝圣微型博物馆',
+        '勒通古镇',
+        '千户藏寨',
+        '长青春科尔寺',
+        '午饭后出发，理塘→雅江（135km，2h44m），途经剪子弯山、卡子拉山',
+        '雅江→新都桥（64km，1h32m），傍晚休闲',
+      ],
+      note:'疲劳指数 ⭐⭐⭐（上午逛理塘+下午返程，节奏适中）',
+      hotel:'桔子康定新都桥摄影天堂小镇酒店', platform:'华住会小程序', policy:'T-1日23:00前可取消',
+      body:'上午逛理塘：仓央嘉措纪念馆、朝圣微型博物馆、勒通古镇、千户藏寨、长青春科尔寺。午后经剪子弯山、卡子拉山返新都桥。' },
+    { id:'D9', date:'7.26', title:'最长车程 · 返程武汉', img:'1436491865332-7a61a109cc05', drive:'纯自驾5h', km:'新都桥→成都 约340km（含还车、机场通勤总耗时约7小时）', fatigue:4, span:'md:col-span-6', tag:'返程',
+      items:[
+        '新都桥→成都',
+        '天府机场：373km，5h15m',
+        '双流机场：338km，5h',
+        '还车',
+        '成都✈️武汉：国航CA4043 | 18:20-20:20 | 双流T2-天河T3',
+      ],
+      note:'疲劳指数 ⭐⭐⭐⭐ | 航班信息：预定后更新',
+      hotel:'回家', platform:'', policy:'',
+      body:'新都桥→成都约340km，纯自驾五小时，含还车通勤共七小时。国航CA4043，双流T2→天河T3。' },
+  ];
+
+  const stars = n => '★'.repeat(n) + '☆'.repeat(5 - n);
+
+  const bento = document.getElementById('bento');
+  bento.innerHTML = days.map(d => `
+    <article class="reveal card-hover bezel mb-4 break-inside-avoid inline-block w-full group cursor-default">
+      <div class="bezel-core relative flex flex-col">
+        ${d.featured ? `<div class="absolute top-4 left-4 z-10 eyebrow text-ice bg-cream/15 backdrop-blur rounded-full px-3 py-1 font-600">${d.tag}</div>` : ''}
+        <div class="relative h-40 overflow-hidden shrink-0 ${d.featured ? 'md:h-52' : ''}">
+          <img src="https://images.unsplash.com/photo-${d.img}?auto=format&fit=crop&w=800&q=80" alt="" class="w-full h-full object-cover scenic" />
+          <div class="absolute inset-0" style="background: linear-gradient(to top, rgba(6,12,16,0.88), transparent 62%);"></div>
+          <div class="absolute bottom-3 left-4 right-4 flex items-end justify-between text-cream">
+            <div>
+              <div class="font-display font-800 text-2xl leading-none">${d.id}</div>
+              <div class="text-[10px] text-cream/80 mt-1">${d.date}</div>
+            </div>
+            ${!d.featured ? `<span class="eyebrow text-cream bg-espresso/70 backdrop-blur rounded-full px-2.5 py-1 font-600">${d.tag}</span>` : ''}
+          </div>
+        </div>
+        <div class="p-5 flex flex-col">
+          <h3 class="font-display font-700 text-lg text-cream leading-tight">${d.title}</h3>
+
+          ${d.train ? `<div class="mt-3 space-y-1">
+            ${d.train.map(t => `<div class="flex items-center gap-2 text-[11px] text-cream/85 bg-ice/15 rounded-lg px-2.5 py-1.5"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-ice shrink-0"><rect x="5" y="3" width="14" height="14" rx="2"/><path d="M5 17h14M8 21l-2-2M16 21l2-2"/></svg><span class="font-500">${t}</span></div>`).join('')}
+          </div>` : ''}
+
+          <p class="text-xs text-cream/85 mt-2.5 leading-relaxed">${d.body}</p>
+
+          ${d.items ? `<ul class="mt-3 space-y-1.5">
+            ${d.items.map(it => {
+              const sub = it.startsWith('—');
+              return `<li class="flex gap-2 text-[11px] leading-relaxed ${sub?'text-cream/85 pl-3':'text-cream/85'}">${sub?'':`<span class="text-ice mt-[3px] shrink-0">▸</span>`}<span>${it}</span></li>`;
+            }).join('')}
+          </ul>` : ''}
+
+          ${d.rental ? `<div class="mt-3 text-[11px] text-cream/80 bg-cream/[0.06] rounded-lg p-2.5 leading-relaxed"><span class="eyebrow text-ice">租车</span><br/>${d.rental}</div>` : ''}
+
+          <div class="mt-4 pt-3 border-t border-cream/10 space-y-2">
+            <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px]">
+              <span class="text-cream/80">自驾 <b class="text-cream">${d.drive}</b></span>
+              <span class="text-cream/40">·</span>
+              <span class="text-ice tracking-wider">${stars(d.fatigue)}</span>
+            </div>
+            <div class="text-[10px] text-cream/50 leading-relaxed">${d.km}</div>
+            <div class="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+              <span class="text-[10px] text-cream/60">住宿</span>
+              <span class="text-[11px] text-cream font-500">${d.hotel}</span>
+              ${d.platform ? `<span class="text-[10px] text-cream/40">· ${d.platform}</span>` : ''}
+              ${d.policy ? `<span class="text-[10px] ${d.policy.includes('不可取消')?'text-red-300':'text-ice'} font-500">· ${d.policy}</span>` : ''}
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+  `).join('');
+
+  /* ============ HORIZONTAL ACCORDION ============ */
+  const highlights = [
+    { title:'四姑娘山', sub:'双桥沟 · 长坪沟', img:'1454496522488-7a8e488e8606', text:'蜀山之后，四座毗连的雪峰。双桥沟全程观光车，长坪沟轻徒步两三小时——最舒缓的高原入门。', region:'阿坝 · 海拔3200m' },
+    { title:'甲居藏寨', sub:'丹巴 · 碉楼', img:'1528127269322-539801943592', text:'红白相间的藏式民居层层叠落于山腰，碉楼群远观不攀爬。田园风光与人文并重。', region:'甘孜 · 海拔2000m' },
+    { title:'折多山垭口', sub:'川藏第一关', img:'1486870591958-9b9d0d1dda99', text:'天气晴朗时半小时绕行，海拔4298米。翻过此山，便是真正意义上的藏区。', region:'甘孜 · 海拔4298m' },
+    { title:'格聂之眼', sub:'乃干纳托', img:'1469854523086-cc02fe5d8800', text:'大地瞳孔，一汪圆海子倒映格聂神山。铁匠山垭口远眺主峰，孤独一棵树下轻徒步。', region:'甘孜 · 海拔4700m' },
+  ];
+
+  const acc = document.getElementById('accordion');
+  acc.innerHTML = highlights.map((h, i) => `
+    <div class="accordion-slice ${i===0?'is-open':''} relative flex-1 min-w-0 overflow-hidden cursor-pointer" data-idx="${i}" style="flex: ${i===0?'4':'1'};">
+      <img src="https://images.unsplash.com/photo-${h.img}?auto=format&fit=crop&w=900&q=80" alt="" class="absolute inset-0 w-full h-full object-cover scenic" />
+      <div class="absolute inset-0" style="background: linear-gradient(to top, rgba(6,12,16,0.92) 0%, rgba(6,12,16,0.2) 50%, transparent 100%);"></div>
+      <div class="absolute bottom-0 left-0 right-0 p-6 text-cream">
+        <div class="eyebrow text-frost mb-2">${h.region}</div>
+        <h3 class="font-display font-800 text-2xl md:text-3xl leading-tight">${h.title}</h3>
+        <div class="text-cream/85 text-xs mt-1">${h.sub}</div>
+        <div class="acc-text overflow-hidden transition-all duration-700" style="max-height:${i===0?'120px':'0'};">
+          <p class="text-cream/90 text-sm mt-4 leading-relaxed pr-4">${h.text}</p>
+        </div>
+      </div>
+      <div class="absolute top-5 right-5 w-9 h-9 rounded-full border border-cream/30 flex items-center justify-center text-cream/90 text-xs">${i+1}</div>
+    </div>
+  `).join('');
+
+  acc.querySelectorAll('.accordion-slice').forEach(slice => {
+    const expand = () => {
+      acc.querySelectorAll('.accordion-slice').forEach(s => {
+        const open = s === slice;
+        s.classList.toggle('is-open', open);
+        s.style.flex = open ? '4' : '1';
+        s.querySelector('.acc-text').style.maxHeight = open ? '120px' : '0';
+      });
+    };
+    slice.addEventListener('mouseenter', expand);
+    slice.addEventListener('click', expand);
+  });
+
+  /* ============ GEOGRAPHY TABLE ============ */
+  const geo = [
+    { state:'阿坝藏族羌族自治州', city:'汶川县', town:'映秀镇', stay:'D1,D2', lodge:'' },
+    { state:'', city:'小金县', town:'四姑娘山镇', stay:'D1,D2,D3', lodge:'D1,D2' },
+    { state:'甘孜藏族自治州', city:'丹巴县', town:'—', stay:'D3,D4', lodge:'D3' },
+    { state:'', city:'康定市', town:'—', stay:'D4,D5', lodge:'D4' },
+    { state:'', city:'理塘县', town:'—', stay:'D5,D7', lodge:'D5,D7' },
+    { state:'', city:'', town:'格聂镇', stay:'D6', lodge:'D6' },
+    { state:'', city:'', town:'新都桥镇', stay:'D7,D8', lodge:'D8' },
+  ];
+  document.getElementById('geo-body').innerHTML = geo.map((g, i) => `
+    <tr class="hover:bg-cream/[0.05] transition-colors duration-300">
+      <td class="px-5 py-4 text-cream/80 align-top ${i===0||i===2?'font-500':''}">${g.state||'<span class="text-cream/25">↳</span>'}</td>
+      <td class="px-5 py-4 text-cream/80 align-top">${g.city||'<span class="text-cream/25">·</span>'}</td>
+      <td class="px-5 py-4 text-cream/80 align-top">${g.town}</td>
+      <td class="px-5 py-4 align-top"><span class="text-ice font-500">${g.stay}</span></td>
+      <td class="px-5 py-4 text-cream/80 align-top">${g.lodge||'<span class="text-cream/25">—</span>'}</td>
+    </tr>
+  `).join('');
+
+  /* ============ TODO LIST ============ */
+  const todos = [
+    { text:'7月3日12:15，去程火车票', done:false },
+  ];
+  document.getElementById('todo-list').innerHTML = todos.map(t => `
+    <div class="reveal flex items-center gap-4 bezel">
+      <div class="bezel-core flex items-center gap-4 p-5 w-full">
+        <span class="w-6 h-6 rounded-md border-2 ${t.done?'bg-ice border-ice':'border-ink/25'} flex items-center justify-center shrink-0">
+          ${t.done?'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>':''}
+        </span>
+        <span class="text-sm ${t.done?'text-cream/40 line-through':'text-cream font-500'}">${t.text}</span>
+      </div>
+    </div>
+  `).join('');
+
+  /* ============ GSAP + REVEAL ============ */
+  gsap.registerPlugin(ScrollTrigger);
+
+  // hero load animation
+  gsap.to('#hero .reveal', { opacity: 1, y: 0, filter: 'blur(0px)', duration: 1.2, stagger: 0.15, ease: 'power3.out', delay: 0.2, onStart: () => document.querySelectorAll('#hero .reveal').forEach(el => el.classList.add('in')) });
+
+  // scroll reveal
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { threshold: 0.12, rootMargin: '0px 0px -60px 0px' });
+  document.querySelectorAll('.reveal:not(#hero .reveal)').forEach(el => io.observe(el));
+
+  // image scale-fade on scroll
+  gsap.utils.toArray('#bento article').forEach(card => {
+    const img = card.querySelector('img.scenic');
+    if (!img) return;
+    gsap.fromTo(img, { scale: 0.92 }, {
+      scale: 1, ease: 'none',
+      scrollTrigger: { trigger: card, start: 'top bottom', end: 'bottom top', scrub: true }
+    });
+  });
+
+  // route pinned subtle parallax on title
+  ScrollTrigger.create({
+    trigger: '#route', start: 'top center', end: 'bottom center',
+    onUpdate: self => {
+      const title = document.querySelector('#route h2');
+      if (title) gsap.set(title, { opacity: 0.4 + self.progress * 0.6 });
+    }
+  });
+
+  // accordion gentle scale on entry
+  gsap.from('#accordion .accordion-slice', {
+    opacity: 0, y: 40, duration: 0.9, stagger: 0.08, ease: 'power3.out',
+    scrollTrigger: { trigger: '#accordion', start: 'top 80%' }
+  });
+
+  /* ============ PASSWORD GATE ============ */
+  // Change this to your own passphrase. Front-end only — slows casual visitors,
+  // not a strong secret. For real privacy, restrict WHO you share the URL with.
+  const PASSPHRASE = 'chuanxi2026';
+  const gate = document.getElementById('gate');
+  const gateInput = document.getElementById('gate-input');
+  const gateBtn = document.getElementById('gate-btn');
+  const gateErr = document.getElementById('gate-err');
+
+  function tryUnlock() {
+    const card = gate.querySelector('.gate-card');
+    if (gateInput.value.trim() === PASSPHRASE) {
+      gate.classList.add('unlocked');
+      sessionStorage.setItem('sx_ok', '1');
+      // refresh ScrollTrigger after layout shift
+      setTimeout(() => ScrollTrigger.refresh(), 700);
+    } else {
+      card.classList.add('gate-shake');
+      gateErr.textContent = '口令不正确，请重试';
+      setTimeout(() => card.classList.remove('gate-shake'), 400);
+    }
+  }
+  // unlock instantly if already authenticated this session
+  if (sessionStorage.getItem('sx_ok') === '1') {
+    gate.classList.add('unlocked');
+  }
+  gateBtn.addEventListener('click', tryUnlock);
+  gateInput.addEventListener('keydown', e => { if (e.key === 'Enter') tryUnlock(); });
+  setTimeout(() => gateInput.focus(), 400);
+</script>
+
+</body>
+</html>
